@@ -1,3 +1,6 @@
+{% load static from staticfiles %}
+<link href="{% static 'css/base.css' %}" rel="stylesheet" type="text/css">
+
 <form action="/news/add/" method="post"> {% csrf_token %}
   <table>
     <tr>

@@ -1,7 +1,8 @@
+{% load static from staticfiles %}
+<link href="{% static 'css/base.css' %}" rel="stylesheet" type="text/css">
+
 <h2>{{ item.title }}</h2>
-
 <p> {{ item.created_at }}</p>
-
 <p>{{ item.text }}</p>
 
 <a href="/news/">Return to index page</a>
