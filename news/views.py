@@ -79,6 +79,7 @@ def index(request):
         news[d].append(item)
         for value in news.values():
             value.sort(key=lambda k: k['created_at'], reverse=True)
+    news = dict(sorted(news.items(), key=lambda t: t[0], reverse=True))
 
     context = {'news': news}
     return HttpResponse(template.render(context, request))
