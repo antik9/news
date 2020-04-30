@@ -1,12 +1,17 @@
 <h1>Hyper news</h1>
-{% if news %}
-    <ul>
-    {% for id, item in news %}
-        <li><a href="/news/{{ id }}/">{{ item.title }}</a><span>  {{ item.datetime }}</span></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No news are available.</p>
-{% endif %}
+<form method="get">
+  Search the news: <input name="q">
+</form>
+
+{% for d, items in news.items %}
+<h4> {{ d }} </h4>
+<ul>
+  {% for item in items %}
+  <li>
+    <a href="/news/{{ item.link }}/">{{ item.title }}</a>
+  </li>
+  {% endfor %}
+</ul>
+{% endfor %}
 
 <a href="/news/adding_page/">Add news</a>

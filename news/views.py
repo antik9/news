@@ -1,14 +1,21 @@
 import json
 import os
+import random
 
 from json.decoder import JSONDecodeError
 from datetime import datetime
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect
 from django.template import loader
 
 file_path = os.path.join('news', 'news_data.json')
+
+DT_TEMPLATE = '%Y/%m/%d %H:%M:%S'
+
+
+def main(request, *args, **kwargs):
+    return HttpResponseRedirect('/news')
 
 
 def add(request):
@@ -21,7 +28,8 @@ def add(request):
     fresh_news = {
         'title': request.POST.get('title'),
         'text': request.POST.get('text'),
-        'datetime': datetime.now().strftime('%d.%m.%y %H:%M:%S'),
+        'created_at': datetime.now().strftime(DT_TEMPLATE),
+        'link': random.randint(1, 1_000_000),
     }
     news_data.append(fresh_news)
 
@@ -41,13 +49,14 @@ def detail(request, news_id):
     with open(file_path, 'r') as file_object:
         news_data = json.load(file_object)
 
-    news_item = news_data[news_id]
-
-    template = loader.get_template('news/detail.html')
-    context = {
-       'item': news_item
-    }
-    return HttpResponse(template.render(context, request))
+    for news_item in news_data:
+        if news_id == int(news_item['link']):
+            template = loader.get_template('news/detail.html')
+            context = {
+               'item': news_item
+            }
+            return HttpResponse(template.render(context, request))
+    raise Http404
 
 
 def index(request):
@@ -57,10 +66,19 @@ def index(request):
         except JSONDecodeError:
             news_data = []
 
+    q = request.GET.get('q', '')
     template = loader.get_template('news/index.html')
 
-    news_data = [(id, news) for id, news in enumerate(news_data)]
-    context = {
-        'news': news_data,
-    }
+    news = {}
+    for item in news_data:
+        if q not in item['title'].lower():
+            continue
+        d = datetime.strptime(item['created_at'], DT_TEMPLATE).date().strftime(DT_TEMPLATE[:8])
+        if d not in news:
+            news[d] = []
+        news[d].append(item)
+        for value in news.values():
+            value.sort(key=lambda k: k['created_at'], reverse=True)
+
+    context = {'news': news}
     return HttpResponse(template.render(context, request))
